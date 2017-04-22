@@ -37,7 +37,7 @@ function setup() {
   centerCanvas();
 
 	planet = createObject(0.0, 0.0, "world3.png");
-	player = createObject(PLANET_RADIUS + 25, 0, "player1.png");
+	player = createObject(PLANET_RADIUS + 25, 180, "player1.png");
 	for (var i = 0; i < 0; i++) {
 		testers.push(createObject(PLANET_RADIUS + 75, 45*i, "player1.png"));
 	}
