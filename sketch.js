@@ -1,13 +1,25 @@
-var buildType = 1; //0 for local, 1 for web
-
-function getResource(fileName) {
-	var path = "res/";
-	if (buildType == 1) path = "https://giulianoconte.github.io/Restore/" + path;
-	return loadImage(path + fileName);
-}
+var BUILD_TYPE = 1; //0 for local, 1 for web
+var GAME_SIZE = 580;
+var HALF_GAME_SIZE = GAME_SIZE / 2;
+var PLANET_RADIUS = 120;
 
 var cnv; //canvas
 var planet;
+var player;
+
+function getResource(fileName) {
+	var path = "res/";
+	if (BUILD_TYPE == 1) path = "https://giulianoconte.github.io/Restore/" + path;
+	return loadImage(path + fileName);
+}
+
+function createObject(x_, y_, fileName) {
+	var s = createSprite(x_, y_);
+	s.addImage(getResource(fileName));
+	return s;
+}
+
+
 
 function centerCanvas() {
 	var x = (windowWidth - width) / 2;
@@ -16,11 +28,11 @@ function centerCanvas() {
 }
 
 function setup() {
-  cnv = createCanvas(640, 640);
+  cnv = createCanvas(GAME_SIZE, GAME_SIZE);
   centerCanvas();
 
-	planet = createSprite(320, 320);
-	planet.addImage(getResource("world1.png"));
+	planet = createObject(HALF_GAME_SIZE, HALF_GAME_SIZE, "world3.png");
+	planet = createObject(HALF_GAME_SIZE, HALF_GAME_SIZE - 120 - 25, "player1.png");
 
   background(51);
 }
