@@ -11,7 +11,7 @@ function centerCanvas() {
 }
 
 function setup() {
-  cnv = createCanvas(400, 400);
+  cnv = createCanvas(640, 640);
   centerCanvas();
 
   background(51);
@@ -22,10 +22,8 @@ function windowResized() {
 }
 
 function draw() {
-  background(51, 25, 25);
+  background(25, 25, 25);
   fill(0);
-  textAlign(CENTER);
-  text("Click to create a new sprite", width/2, height/2);
   drawSprites();
 }
 
