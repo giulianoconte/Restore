@@ -15,7 +15,8 @@ function setup() {
   cnv = createCanvas(640, 640);
   centerCanvas();
 
-	var planetImg = loadImage("res/world1.png");
+	//var planetImg = loadImage("res/world1.png");
+	var planetImg = loadImage("https://github.com/giulianoconte/Restore/blob/master/res/world1.png");
 	planet = createSprite(400, 400);
 	planet.addImage(planetImg);
   background(51);
