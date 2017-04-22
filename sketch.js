@@ -1,4 +1,4 @@
-var buildType = 0; //0 for local, 1 for web
+var buildType = 1; //0 for local, 1 for web
 
 function getResource(fileName) {
 	var path = "res/";
