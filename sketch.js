@@ -1,6 +1,10 @@
-// variables: A B
-// axiom: A
-// rules: (A -> AB), (B -> A)
+var buildType = 0; //0 for local, 1 for web
+
+function getResource(fileName) {
+	var path = "res/";
+	if (buildType == 1) path = "https://giulianoconte.github.io/Restore/" + path;
+	return loadImage(path + fileName);
+}
 
 var cnv; //canvas
 var planet;
@@ -15,10 +19,9 @@ function setup() {
   cnv = createCanvas(640, 640);
   centerCanvas();
 
-	//var planetImg = loadImage("res/world1.png");
-	var planetImg = loadImage("https://giulianoconte.github.io/Restore/res/world1.png");
-	planet = createSprite(400, 400);
-	planet.addImage(planetImg);
+	planet = createSprite(320, 320);
+	planet.addImage(getResource("world1.png"));
+
   background(51);
 }
 
