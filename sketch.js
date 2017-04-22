@@ -1,4 +1,4 @@
-var BUILD_TYPE = 0; //0 for local, 1 for web
+var BUILD_TYPE = 1; //0 for local, 1 for web
 var GAME_SIZE = 580;
 var HALF_GAME_SIZE = GAME_SIZE / 2;
 var PLANET_RADIUS = 120;
