@@ -12,23 +12,12 @@ var KEY_D = false;
 
 var planet;
 var player;
+var testers = [];
 
 function getResource(fileName) {
 	var path = "res/";
 	if (BUILD_TYPE == 1) path = "https://giulianoconte.github.io/Restore/" + path;
 	return loadImage(path + fileName);
-}
-
-function getInput() {
-	KEY_W = false; KEY_S = false; KEY_A = false; KEY_D = false;
-	if (keyWentDown("w") || keyWentDown("W"))
-		KEY_W = true;
-	if (keyWentDown("s") || keyWentDown("S"))
-		KEY_S = true;
-	if (keyDown("a") || keyDown("A"))
-		KEY_A = true;
-	if (keyDown("d") || keyDown("D"))
-		KEY_D = true;
 }
 
 
@@ -44,9 +33,10 @@ function setup() {
   centerCanvas();
 
 	planet = createObject(0.0, 0.0, "world3.png");
-	player = createObject(PLANET_RADIUS + 25, 90.0, "player1.png");
-
-  background(51);
+	player = createObject(PLANET_RADIUS + 25, 0, "player1.png");
+	for (var i = 0; i < 0; i++) {
+		testers.push(createObject(PLANET_RADIUS + 75, 45*i, "player1.png"));
+	}
 }
 
 function windowResized() {
@@ -56,19 +46,40 @@ function windowResized() {
 function draw() {
 	gameLoop();
 
-  background(25, 25, 25);
+	background(25);
+	background(230);
   fill(0);
   drawSprites();
 }
 
+function getInput() {
+	KEY_W = false; KEY_S = false; KEY_A = false; KEY_D = false;
+	if (keyWentDown("w") || keyWentDown("W"))
+		KEY_W = true;
+	if (keyWentDown("s") || keyWentDown("S"))
+		KEY_S = true;
+	if (keyDown("a") || keyDown("A"))
+		KEY_A = true;
+	if (keyDown("d") || keyDown("D"))
+		KEY_D = true;
+}
+
 function gameLoop() {
 	getInput();
-	if (KEY_A)
-		player.move(-1);
-	if (KEY_D)
+	if (KEY_A) {
 		player.move(1);
+	}
+	if (KEY_D) {
+		player.move(-1);
+	}
+	if (keyDown("p")) {
+		player.addMag(2);
+	}
+	if (keyDown("o")) {
+		player.addMag(-2);
+	}
+	player.steer();
 }
 
 function mousePressed() {
-	player.move(1);
 }
