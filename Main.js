@@ -1,4 +1,15 @@
-var BUILD_TYPE = 1; //0 for local, 1 for web
+/**
+ * Restore
+ * author: Giuliano Conte
+ *
+ * A game about restoring a planet back to health.
+ * Made for Ludum Dare 38 (4/21/2017 9PM EST - 4/23/2017 9PM EST)
+ * with theme "A Small World".
+ *
+ * Hosted on <https://giulianoconte.github.io/Restore/>.
+ */
+
+var BUILD_TYPE = 0; //0 for local, 1 for web
 var GAME_SIZE = 580;
 var HALF_GAME_SIZE = GAME_SIZE / 2;
 var PLANET_RADIUS = 120;
@@ -12,15 +23,8 @@ var KEY_D = false;
 
 var planet;
 var player;
+var enemies = [];
 var testers = [];
-
-function getResource(fileName) {
-	var path = "res/";
-	if (BUILD_TYPE == 1) path = "https://giulianoconte.github.io/Restore/" + path;
-	return loadImage(path + fileName);
-}
-
-
 
 function centerCanvas() {
 	var x = (windowWidth - width) / 2;
@@ -33,7 +37,7 @@ function setup() {
   centerCanvas();
 
 	planet = createObject(0.0, 0.0, "world3.png");
-	player = createObject(PLANET_RADIUS + 25, 0, "player1.png");
+	player = createObject(PLANET_RADIUS + 25, 90, "player1.png");
 	for (var i = 0; i < 0; i++) {
 		testers.push(createObject(PLANET_RADIUS + 75, 45*i, "player1.png"));
 	}
