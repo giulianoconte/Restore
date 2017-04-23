@@ -26,6 +26,7 @@ var atmosphere;
 var player;
 var enemies = [];
 var trees = [];
+var saplings = [];
 var grasses = [];
 var testers = [];
 
@@ -35,7 +36,7 @@ function centerCanvas() {
 	cnv.position(x, y);
 }
 
-function setup() {
+function preload() {
   cnv = createCanvas(GAME_SIZE, GAME_SIZE);
   centerCanvas();
 
@@ -44,9 +45,6 @@ function setup() {
 	planet = new GameObject(0.0, 0.0, "world3.png");
 	for (var i = 0; i < 8; i++) {
 		enemies.push(new GameObject(PLANET_RADIUS + 130, 45*i, "enemy5.png"));
-	}
-	for (var i = 0; i < 0; i++) {
-		trees.push(new GameObject(PLANET_RADIUS + 45, i*12, "tree1.png"));
 	}
 	for (var i = 0; i < 360; i++) {
 		var off = Math.random();
@@ -61,12 +59,11 @@ function setup() {
 	}
 	player = new GameObject(PLANET_RADIUS + 25, 90, "player1.png");
 
-	// surface.addTree(0);
-	// surface.addTree(90);
-	// surface.addTree(180);
-	// surface.addTree(270);
 
 	colorMode(RGB, 255, 255, 255, 1);
+}
+
+function setup() {
 }
 
 function windowResized() {
@@ -85,10 +82,10 @@ function getInput() {
 		KEY_D = true;
 }
 
-var intense = 0.0;
+var atmosphereStrength = 0.0;
 var removeTreeProb = 0.0;
 
-function update() {
+function updatePlayer() {
 	if (KEY_A) {
 		player.move(1);
 		for (var i = 0; i < enemies.length; i++) {
@@ -107,22 +104,77 @@ function update() {
 	if (keyDown("o")) {
 		player.addMag(-2);
 	}
-	if (keyDown("j")) {
-		intense += 0.01;
+	player.steer();
+}
+
+function updateEnemies() {
+	if (KEY_A) {
+		for (var i = 0; i < enemies.length; i++) {
+			enemies[i].move(-1);
+		}
 	}
-	if (keyDown("k")) {
-		intense -= 0.01;
+	if (KEY_D) {
+		for (var i = 0; i < enemies.length; i++) {
+			enemies[i].move(1);
+		}
 	}
+	for (var i = 0; i < enemies.length; i++) {
+		enemies[i].steer();
+	}
+}
+
+function updateSaplings() {
+	for (var i = 0; i < saplings.length; i++) {
+		if (saplings[i].getHP() <= 0) {
+			surface.removeSapling(saplings[i].getAngle());
+			saplings[i].setLife(1);
+			saplings.splice(i, 1);
+		}
+	}
+}
+
+function updateTrees() {
+	for (var i = 0; i < trees.length; i++) {
+		if (trees[i].getHP() <= 0) {
+			surface.removeTree(trees[i].getAngle());
+			trees[i].setLife(1);
+			trees.splice(i, 1);
+		}
+	}
+}
+
+function update() {
+	updatePlayer();
+	updateEnemies();
+	updateSaplings();
+	updateTrees();
+
 	if (keyWentDown("n")) {
-		trees.push(new GameObject(PLANET_RADIUS + 45, player.getAngle(), "tree1.png"));
-		surface.addTree(player.getAngle());
+		saplings.push(new GameObject(PLANET_RADIUS + 45, player.getAngle(), "sapling1.png"));
+		surface.addSapling(player.getAngle());
 	}
 	if (keyWentDown("m")) {
-		surface.removeTree(player.getAngle());
+		trees.push(new GameObject(PLANET_RADIUS + 45, player.getAngle(), "tree1.png"));
+		surface.removeSapling(player.getAngle());
+		surface.addTree(player.getAngle());
+	}
+	if (keyWentDown("v")) {
+		for (var i = 0; i < saplings.length; i++) {
+			saplings[i].addHP(-1);
+		}
+	}
+	if (keyWentDown("b")) {
+		for (var i = 0; i < trees.length; i++) {
+			trees[i].addHP(-1);
+		}
+	}
+	if (keyWentDown("l")) {
+		surface.log();
 	}
 
-	//update grasses
+	//update surface
 	surface.update();
+	//update grass visibility
 	for (var i = 0; i < grasses.length; i++) {
 		if (surface.get(i) === 2) {
 			grasses[i].setVisible(true);
@@ -130,13 +182,10 @@ function update() {
 			grasses[i].setVisible(false);
 		}
 	}
-	intense = surface.coverage();
-	atmosphere.setIntensity(intense);
+	//atmosphere grows and shrinks with grass coverage
+	atmosphereStrength = surface.coverage();
+	atmosphere.setIntensity(atmosphereStrength);
 
-	player.steer();
-	for (var i = 0; i < enemies.length; i++) {
-		enemies[i].steer();
-	}
 }
 
 function draw() {

@@ -23,12 +23,22 @@ function GameObject(radius_, angle_, fileName) {
 		this.maxSpeed = 0.07;
 		this.maxForce = 0.02;
 		this.friction = 0.2;
+		this.hp = 2;
 	}
 	this.getAngle = function() {
 		return this.ang * 360 / (Math.PI * 2);
 	}
+	this.getHP = function() {
+		return this.hp;
+	}
+	this.addHP = function(hp_) {
+		this.hp += hp_;
+	}
 	this.setVisible = function(vis) {
 		this.s.visible = vis;
+	}
+	this.setLife = function(life_) {
+		this.s.life = life_;
 	}
 	//set drawing variables so this can be properly drawn
 	this.orient = function() {
