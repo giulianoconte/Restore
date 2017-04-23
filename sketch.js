@@ -49,13 +49,14 @@ function setup() {
 		trees.push(createObject(PLANET_RADIUS + 45, i*12, "tree1.png"));
 	}
 	for (var i = 0; i < 360; i++) {
-		var off = (Math.random());
+		var off = Math.random();
+		var off2 = Math.floor(Math.random() * 3);
 		if (off < 0.4) off = 2;
 		else if (off < 0.75) off = 5;
 		else if (off < 0.95) off = 1;
 		else if (off < 0.975) off = 3;
 		else if (off < 1.0) off = 4;
-		grasses.push(createObject(PLANET_RADIUS - 1 + (off), i, "grass" + (off) + ".png"));
+		grasses.push(createObject(PLANET_RADIUS + 1 + (off2), i, "grass" + (off) + ".png"));
 	}
 	player = createObject(PLANET_RADIUS + 25, 90, "player1.png");
 
@@ -112,6 +113,8 @@ function update() {
 		if (i > surface.length - 1) {
 			grasses[i].visible = true;
 		} else if (surface.get(i) === 2) {
+			grasses[i].visible = true;
+		} else if (surface.get(i) === 3) {
 			grasses[i].visible = true;
 		} else {
 			grasses[i].visible = false;

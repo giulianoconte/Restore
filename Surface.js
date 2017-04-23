@@ -10,7 +10,7 @@ function createSurface() {
     for (var i = 0; i < 360; i++) {
       var spawn = Math.floor(Math.random() * 3);
       surface.push(1);
-      surface.probs.push(0.001);
+      surface.probs.push(0.1);
     }
   }
   surface.get = function(index) {
@@ -30,27 +30,38 @@ function createSurface() {
     return res / surface.length;
   }
   surface.update = function() {
-    var flag = true;
+    var flag = 0;
     for (var i = 0; i < surface.length; i++) {
       if (surface[i] === 1) {
         surface.probs[i] += 0.00001;
         if (Math.random() < surface.probs[i]) {
           surface[i] = 2;
         }
-        flag = false;
+        flag = 1;
       }
       if (surface[i] === 2) {
-        surface.probs[i] += 0.00001;
+        surface.probs[i] = 0.0;
       }
       if (surface[i] === 3) {
-        surface.probs[i] -= 0.00001;
-        if (Math.random() > surface.probs[i]) {
+        surface.probs[i] += 0.00001;
+        if (Math.random() < surface.probs[i]) {
           surface[i] = 0;
         }
+        flag = 2;
+      }
+      if (surface[i] === 0) {
+        surface.probs[i] = 0.0;
       }
     }
-    if (flag) {
-      //console.log(flag);
+    if (flag === 0 && surface[0] === 2) {
+      for (var i = 0; i < surface.length; i++) {
+        surface[i] = 3;
+      }
+    }
+    if (flag === 0 && surface[0] === 0) {
+      for (var i = 0; i < surface.length; i++) {
+        surface[i] = 1;
+      }
     }
   }
 
