@@ -41,24 +41,30 @@ function setup() {
 
 	surface = createSurface();
 	atmosphere = createAtmosphere(80.0);
-	planet = createObject(0.0, 0.0, "world3.png");
+	planet = new GameObject(0.0, 0.0, "world3.png");
 	for (var i = 0; i < 8; i++) {
-		enemies.push(createObject(PLANET_RADIUS + 130, 45*i, "enemy5.png"));
+		enemies.push(new GameObject(PLANET_RADIUS + 130, 45*i, "enemy5.png"));
 	}
 	for (var i = 0; i < 0; i++) {
-		trees.push(createObject(PLANET_RADIUS + 45, i*12, "tree1.png"));
+		trees.push(new GameObject(PLANET_RADIUS + 45, i*12, "tree1.png"));
 	}
 	for (var i = 0; i < 360; i++) {
 		var off = Math.random();
-		var off2 = Math.floor(Math.random() * 3);
+		var off2 = Math.floor(Math.random() * 4);
 		if (off < 0.4) off = 2;
 		else if (off < 0.75) off = 5;
 		else if (off < 0.95) off = 1;
 		else if (off < 0.975) off = 3;
 		else if (off < 1.0) off = 4;
-		grasses.push(createObject(PLANET_RADIUS + 1 + (off2), i, "grass" + (off) + ".png"));
+		grasses.push(new GameObject(PLANET_RADIUS + 1 + (off2), i, "grass" + (off) + ".png"));
+		grasses[i].setVisible(false);
 	}
-	player = createObject(PLANET_RADIUS + 25, 90, "player1.png");
+	player = new GameObject(PLANET_RADIUS + 25, 90, "player1.png");
+
+	// surface.addTree(0);
+	// surface.addTree(90);
+	// surface.addTree(180);
+	// surface.addTree(270);
 
 	colorMode(RGB, 255, 255, 255, 1);
 }
@@ -80,6 +86,7 @@ function getInput() {
 }
 
 var intense = 0.0;
+var removeTreeProb = 0.0;
 
 function update() {
 	if (KEY_A) {
@@ -106,21 +113,24 @@ function update() {
 	if (keyDown("k")) {
 		intense -= 0.01;
 	}
+	if (keyWentDown("n")) {
+		trees.push(new GameObject(PLANET_RADIUS + 45, player.getAngle(), "tree1.png"));
+		surface.addTree(player.getAngle());
+	}
+	if (keyWentDown("m")) {
+		surface.removeTree(player.getAngle());
+	}
 
 	//update grasses
 	surface.update();
 	for (var i = 0; i < grasses.length; i++) {
-		if (i > surface.length - 1) {
-			grasses[i].visible = true;
-		} else if (surface.get(i) === 2) {
-			grasses[i].visible = true;
-		} else if (surface.get(i) === 3) {
-			grasses[i].visible = true;
-		} else {
-			grasses[i].visible = false;
+		if (surface.get(i) === 2) {
+			grasses[i].setVisible(true);
+		} else if (surface.get(i) === 0) {
+			grasses[i].setVisible(false);
 		}
 	}
-
+	intense = surface.coverage();
 	atmosphere.setIntensity(intense);
 
 	player.steer();
