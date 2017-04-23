@@ -9,7 +9,7 @@
  * Hosted on <https://giulianoconte.github.io/Restore/>.
  */
 
-var BUILD_TYPE = 0; //0 for local, 1 for web
+var BUILD_TYPE = 1; //0 for local, 1 for web
 var GAME_SIZE = 580;
 var HALF_GAME_SIZE = GAME_SIZE / 2;
 var PLANET_RADIUS = 120;
@@ -22,8 +22,11 @@ var KEY_A = false;
 var KEY_D = false;
 
 var planet;
+var atmosphere;
 var player;
 var enemies = [];
+var trees = [];
+var grasses = [];
 var testers = [];
 
 function centerCanvas() {
@@ -36,11 +39,20 @@ function setup() {
   cnv = createCanvas(GAME_SIZE, GAME_SIZE);
   centerCanvas();
 
+	atmosphere = createAtmosphere(80.0);
 	planet = createObject(0.0, 0.0, "world3.png");
-	player = createObject(PLANET_RADIUS + 25, 90, "player1.png");
 	for (var i = 0; i < 8; i++) {
 		enemies.push(createObject(PLANET_RADIUS + 130, 45*i, "enemy5.png"));
 	}
+	for (var i = 0; i < 30; i++) {
+		trees.push(createObject(PLANET_RADIUS + 45, i*12, "tree1.png"));
+	}
+	for (var i = 0; i < 180; i++) {
+		grasses.push(createObject(PLANET_RADIUS + 0, i*2, "grass1.png"));
+	}
+	player = createObject(PLANET_RADIUS + 25, 90, "player1.png");
+
+	colorMode(RGB, 255, 255, 255, 1);
 }
 
 function windowResized() {
@@ -67,6 +79,8 @@ function getInput() {
 		KEY_D = true;
 }
 
+var intense = 0.0;
+
 function gameLoop() {
 	getInput();
 	if (KEY_A) {
@@ -87,6 +101,15 @@ function gameLoop() {
 	if (keyDown("o")) {
 		player.addMag(-2);
 	}
+
+	if (keyDown("j")) {
+		intense += 0.01;
+	}
+	if (keyDown("k")) {
+		intense -= 0.01;
+	}
+	atmosphere.setIntensity(intense);
+
 	player.steer();
 	for (var i = 0; i < enemies.length; i++) {
 		enemies[i].steer();

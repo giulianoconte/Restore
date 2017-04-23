@@ -7,7 +7,9 @@ function getResource(fileName) {
 
 function createObject(radius_, angle_, fileName) {
 	var s = createSprite(-666, -666);
-	s.addImage(getResource(fileName));
+	if (fileName.length > 3) { //for atmosphere which has no texture
+		s.addImage(getResource(fileName));
+	}
 
 	//init
 	s.init = function() {
