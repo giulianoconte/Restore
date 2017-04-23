@@ -39,16 +39,23 @@ function setup() {
   cnv = createCanvas(GAME_SIZE, GAME_SIZE);
   centerCanvas();
 
+	surface = createSurface();
 	atmosphere = createAtmosphere(80.0);
 	planet = createObject(0.0, 0.0, "world3.png");
 	for (var i = 0; i < 8; i++) {
 		enemies.push(createObject(PLANET_RADIUS + 130, 45*i, "enemy5.png"));
 	}
-	for (var i = 0; i < 30; i++) {
+	for (var i = 0; i < 0; i++) {
 		trees.push(createObject(PLANET_RADIUS + 45, i*12, "tree1.png"));
 	}
-	for (var i = 0; i < 180; i++) {
-		grasses.push(createObject(PLANET_RADIUS + 0, i*2, "grass1.png"));
+	for (var i = 0; i < 360; i++) {
+		var off = (Math.random());
+		if (off < 0.4) off = 2;
+		else if (off < 0.75) off = 5;
+		else if (off < 0.95) off = 1;
+		else if (off < 0.975) off = 3;
+		else if (off < 1.0) off = 4;
+		grasses.push(createObject(PLANET_RADIUS - 1 + (off), i, "grass" + (off) + ".png"));
 	}
 	player = createObject(PLANET_RADIUS + 25, 90, "player1.png");
 
@@ -57,14 +64,6 @@ function setup() {
 
 function windowResized() {
 	centerCanvas();
-}
-
-function draw() {
-	gameLoop();
-
-	background(25);
-  fill(0);
-  drawSprites();
 }
 
 function getInput() {
@@ -81,8 +80,7 @@ function getInput() {
 
 var intense = 0.0;
 
-function gameLoop() {
-	getInput();
+function update() {
 	if (KEY_A) {
 		player.move(1);
 		for (var i = 0; i < enemies.length; i++) {
@@ -101,13 +99,25 @@ function gameLoop() {
 	if (keyDown("o")) {
 		player.addMag(-2);
 	}
-
 	if (keyDown("j")) {
 		intense += 0.01;
 	}
 	if (keyDown("k")) {
 		intense -= 0.01;
 	}
+
+	//update grasses
+	surface.update();
+	for (var i = 0; i < grasses.length; i++) {
+		if (i > surface.length - 1) {
+			grasses[i].visible = true;
+		} else if (surface.get(i) === 2) {
+			grasses[i].visible = true;
+		} else {
+			grasses[i].visible = false;
+		}
+	}
+
 	atmosphere.setIntensity(intense);
 
 	player.steer();
@@ -116,5 +126,11 @@ function gameLoop() {
 	}
 }
 
-function mousePressed() {
+function draw() {
+	getInput();
+	update();
+
+	background(25);
+  fill(0);
+  drawSprites();
 }
