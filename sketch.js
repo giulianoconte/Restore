@@ -9,7 +9,7 @@
  * Hosted on <https://giulianoconte.github.io/Restore/>.
  */
 
-var BUILD_TYPE = 1; //0 for local, 1 for web
+var BUILD_TYPE = 0; //0 for local, 1 for web
 var GAME_SIZE = 580;
 var HALF_GAME_SIZE = GAME_SIZE / 2;
 var PLANET_RADIUS = 120;
@@ -38,8 +38,8 @@ function setup() {
 
 	planet = createObject(0.0, 0.0, "world3.png");
 	player = createObject(PLANET_RADIUS + 25, 90, "player1.png");
-	for (var i = 0; i < 0; i++) {
-		testers.push(createObject(PLANET_RADIUS + 75, 45*i, "player1.png"));
+	for (var i = 0; i < 8; i++) {
+		enemies.push(createObject(PLANET_RADIUS + 130, 45*i, "enemy5.png"));
 	}
 }
 
@@ -51,7 +51,6 @@ function draw() {
 	gameLoop();
 
 	background(25);
-	background(230);
   fill(0);
   drawSprites();
 }
@@ -72,9 +71,15 @@ function gameLoop() {
 	getInput();
 	if (KEY_A) {
 		player.move(1);
+		for (var i = 0; i < enemies.length; i++) {
+			enemies[i].move(-1);
+		}
 	}
 	if (KEY_D) {
 		player.move(-1);
+		for (var i = 0; i < enemies.length; i++) {
+			enemies[i].move(1);
+		}
 	}
 	if (keyDown("p")) {
 		player.addMag(2);
@@ -83,6 +88,9 @@ function gameLoop() {
 		player.addMag(-2);
 	}
 	player.steer();
+	for (var i = 0; i < enemies.length; i++) {
+		enemies[i].steer();
+	}
 }
 
 function mousePressed() {
