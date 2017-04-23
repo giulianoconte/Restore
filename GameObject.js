@@ -13,6 +13,7 @@ function GameObject(radius_, angle_, fileName) {
 
 	//init
 	this.init = function() {
+		this.id = getNextID();
 		this.offs = createVector(HALF_GAME_SIZE, HALF_GAME_SIZE);
 		this.mag = radius_;
 		this.ang = toRadians(angle_);
@@ -20,13 +21,23 @@ function GameObject(radius_, angle_, fileName) {
 		this.pos.rotate(-this.ang);
 		this.vel = 0.0;
 		this.acc = 0.0;
-		this.maxSpeed = 0.07;
-		this.maxForce = 0.02;
+		this.maxSpeed = 0.07*1;
+		this.maxForce = 0.02*1;
 		this.friction = 0.2;
-		this.hp = 2;
+		this.hp = -1;
+		this.targetAngle = 0;
+	}
+	this.getID = function() {
+		return this.id;
 	}
 	this.getAngle = function() {
 		return this.ang * 360 / (Math.PI * 2);
+	}
+	this.setTargetAngle = function(angle_) {
+		this.targetAngle = angle_ * (Math.PI * 2) / 360;
+	}
+	this.setHP = function(hp_) {
+		this.hp = hp_;
 	}
 	this.getHP = function() {
 		return this.hp;
@@ -40,28 +51,74 @@ function GameObject(radius_, angle_, fileName) {
 	this.setLife = function(life_) {
 		this.s.life = life_;
 	}
+	this.setMaxSpeed = function(maxSpeed_) {
+		this.maxSpeed = maxSpeed_;
+	}
+	this.setMaxForce = function(maxForce_) {
+		this.maxForce = maxForce_;
+	}
+	this.setFriction = function(friction_) {
+		this.friction = friction_;
+	}
+	this.addMag = function(m) {
+		this.mag += m;
+	}
+	this.getMag = function() {
+		return this.mag;
+	}
 	//set drawing variables so this can be properly drawn
 	this.orient = function() {
 		this.s.rotation = toDegrees(-(this.ang - (Math.PI / 2)));
 		this.s.position.x = p5.Vector.add(this.offs, this.pos).x;
 		this.s.position.y = p5.Vector.add(this.offs, this.pos).y;
 	}
-	this.addMag = function(m) {
-		this.mag += m;
-	}
 	this.move = function(dir) {
 		this.acc = dir * this.maxForce;
 		this.vel += this.acc;
+		//limit range of velocity to [-maxSpeed, maxSpeed]
 		this.vel = Math.max(this.vel, -this.maxSpeed);
 		this.vel = Math.min(this.vel, this.maxSpeed);
 	}
 	this.steer = function() {
+		// while (this.ang < -Math.PI) this.ang += Math.PI;
+		// while (this.ang > Math.PI) this.ang -= Math.PI;
 		this.pos.rotate(this.ang);
 		this.ang += this.vel;
+		//this.acc -= (this.friction * this.acc);
 		this.vel -= (this.friction * this.vel); //friction
 		this.pos.rotate(-this.ang);
 		this.pos.setMag(this.mag);
 		this.orient();
+	}
+	this.seek = function() {
+		//			float targetAngle = getAngle(position, Input.getXY().sub(scrollOffset.to2D()));
+		//			float totalRotation = targetAngle - angle;
+		//			while (totalRotation < -180) totalRotation += 360;
+		//			while (totalRotation > 180)  totalRotation -= 360;
+		//			if (totalRotation < 0.0) {
+		//				angle -= turnSpeed;
+		//			} else if (totalRotation > 0.0) {
+		//				angle += turnSpeed;
+		//			}
+		//			rot = angle;
+		var totalRotation = this.targetAngle - this.ang;
+		// console.log("ang: " + this.ang);
+		// console.log("targetAngle: " + this.targetAngle);
+		// console.log("totalRotation: " + totalRotation);
+		while (totalRotation < -Math.PI) {
+			totalRotation += Math.PI * 2;
+		}
+		while (totalRotation > Math.PI) {
+			totalRotation -= Math.PI * 2;
+		}
+		// console.log("totalRotation normalized: " + totalRotation);
+		if (totalRotation < 0.0) {
+			this.move(-1);
+		} else if (totalRotation > 0.0) {
+			this.move(1);
+		} else {
+			this.move(1);
+		}
 	}
 
 	this.init();

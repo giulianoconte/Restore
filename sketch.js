@@ -14,6 +14,16 @@ var GAME_SIZE = 580;
 var HALF_GAME_SIZE = GAME_SIZE / 2;
 var PLANET_RADIUS = 120;
 
+var PLAYER_RADIUS = PLANET_RADIUS + 25;
+var ENEMY_RADIUS = PLANET_RADIUS + 130;
+var GRASS_RADIUS = PLANET_RADIUS + 1;
+var ENEMY_SPEED = 0.04;
+var ENEMY_FORCE = 0.001;
+var ENEMY_FRICTION = 0.01;
+var ENEMY_SHOOT_TIME = 1000;
+var ENEMY_SHOOT_TIME_OFF = 500;
+var BULLET_SPEED = 2;
+
 var cnv; //canvas
 
 var KEY_W = false;
@@ -25,6 +35,7 @@ var planet;
 var atmosphere;
 var player;
 var enemies = [];
+var bullets = [];
 var trees = [];
 var saplings = [];
 var grasses = [];
@@ -35,6 +46,30 @@ function centerCanvas() {
 	var y = (windowHeight - height) / 2;
 	cnv.position(x, y);
 }
+//this funciton was used from:
+//http://stackoverflow.com/questions/321113/how-can-i-pre-set-arguments-in-javascript-function-call-partial-function-appli/321527#321527
+function partial(func /*, 0..n args */) {
+  var args = Array.prototype.slice.call(arguments, 1);
+  return function() {
+    var allArguments = args.concat(Array.prototype.slice.call(arguments));
+    return func.apply(this, allArguments);
+  };
+}
+//repeatedly shoot from given enemy's id, stops if they are removed from the game
+function repeatShoot(id) {
+	for (var i = 0; i < enemies.length; i++) {
+		//if enemy with their id is still in the game, keep shooting
+		if (enemies[i].getID() === id) {
+			var angle = enemies[i].getAngle();
+			bullets.push(new GameObject(enemies[i].getMag(), enemies[i].getAngle(), "bullet1.png"));
+			bullets[bullets.length-1].setLife(100);
+			//need to create partial function to pass id into next function reference
+			//http://stackoverflow.com/questions/321113/how-can-i-pre-set-arguments-in-javascript-function-call-partial-function-appli/321527#321527
+			var customShoot = partial(repeatShoot, id);
+			setTimeout(customShoot, ENEMY_SHOOT_TIME + Math.random()*ENEMY_SHOOT_TIME_OFF);
+		}
+	}
+}
 
 function preload() {
   cnv = createCanvas(GAME_SIZE, GAME_SIZE);
@@ -43,8 +78,12 @@ function preload() {
 	surface = createSurface();
 	atmosphere = createAtmosphere(80.0);
 	planet = new GameObject(0.0, 0.0, "world3.png");
-	for (var i = 0; i < 8; i++) {
-		enemies.push(new GameObject(PLANET_RADIUS + 130, 45*i, "enemy5.png"));
+	for (var i = 0; i < 3; i++) {
+		enemies.push(new GameObject(ENEMY_RADIUS, 45*i, "enemy5.png"));
+		enemies[i].setMaxSpeed(ENEMY_SPEED);
+		enemies[i].setMaxForce(ENEMY_FORCE);
+		enemies[i].setFriction(ENEMY_FRICTION);
+		repeatShoot(enemies[i].getID());
 	}
 	for (var i = 0; i < 360; i++) {
 		var off = Math.random();
@@ -54,11 +93,10 @@ function preload() {
 		else if (off < 0.95) off = 1;
 		else if (off < 0.975) off = 3;
 		else if (off < 1.0) off = 4;
-		grasses.push(new GameObject(PLANET_RADIUS + 1 + (off2), i, "grass" + (off) + ".png"));
+		grasses.push(new GameObject(GRASS_RADIUS + (off2), i, "grass" + (off) + ".png"));
 		grasses[i].setVisible(false);
 	}
-	player = new GameObject(PLANET_RADIUS + 25, 90, "player1.png");
-
+	player = new GameObject(PLAYER_RADIUS, 90, "player1.png");
 
 	colorMode(RGB, 255, 255, 255, 1);
 }
@@ -68,6 +106,10 @@ function setup() {
 
 function windowResized() {
 	centerCanvas();
+}
+var idIter = 0;
+function getNextID() {
+	return idIter++;
 }
 
 function getInput() {
@@ -83,20 +125,13 @@ function getInput() {
 }
 
 var atmosphereStrength = 0.0;
-var removeTreeProb = 0.0;
 
 function updatePlayer() {
 	if (KEY_A) {
 		player.move(1);
-		for (var i = 0; i < enemies.length; i++) {
-			enemies[i].move(-1);
-		}
 	}
 	if (KEY_D) {
 		player.move(-1);
-		for (var i = 0; i < enemies.length; i++) {
-			enemies[i].move(1);
-		}
 	}
 	if (keyDown("p")) {
 		player.addMag(2);
@@ -110,16 +145,25 @@ function updatePlayer() {
 function updateEnemies() {
 	if (KEY_A) {
 		for (var i = 0; i < enemies.length; i++) {
-			enemies[i].move(-1);
+			//enemies[i].move(-1);
 		}
 	}
 	if (KEY_D) {
 		for (var i = 0; i < enemies.length; i++) {
-			enemies[i].move(1);
+			//enemies[i].move(1);
 		}
 	}
 	for (var i = 0; i < enemies.length; i++) {
+		enemies[i].setTargetAngle(player.getAngle());
+		enemies[i].seek();
 		enemies[i].steer();
+	}
+}
+
+function updateBullets() {
+	for (var i = 0; i < bullets.length; i++) {
+		bullets[i].addMag(-BULLET_SPEED);
+		bullets[i].steer();
 	}
 }
 
@@ -146,16 +190,19 @@ function updateTrees() {
 function update() {
 	updatePlayer();
 	updateEnemies();
+	updateBullets();
 	updateSaplings();
 	updateTrees();
 
 	if (keyWentDown("n")) {
 		saplings.push(new GameObject(PLANET_RADIUS + 45, player.getAngle(), "sapling1.png"));
+		saplings[saplings.length-1].setHP(2);
 		surface.addSapling(player.getAngle());
 	}
 	if (keyWentDown("m")) {
 		trees.push(new GameObject(PLANET_RADIUS + 45, player.getAngle(), "tree1.png"));
 		surface.removeSapling(player.getAngle());
+		trees[trees.length-1].setHP(5);
 		surface.addTree(player.getAngle());
 	}
 	if (keyWentDown("v")) {
