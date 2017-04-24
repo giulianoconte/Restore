@@ -25,6 +25,7 @@ Theme: "A Small World"
  + JavaScript
  + [p5.js](https://p5js.org/)
  + [p5.play](http://p5play.molleindustria.org/)
+ + [GIMP 2](https://www.gimp.org/downloads/)
  
 ## Tutorial on how to create and host your own JavaScript game
 
