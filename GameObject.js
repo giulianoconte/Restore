@@ -25,13 +25,52 @@ function GameObject(radius_, angle_, fileName) {
 		this.maxForce = 0.02*1;
 		this.friction = 0.2;
 		this.hp = -1;
+		this.hasAcorn = false;
+		this.targetID = -1;
 		this.targetAngle = 0;
+		this.acornState = 1; //1 loaded, 2 shot, 3, recharge
 	}
 	this.getID = function() {
 		return this.id;
 	}
+	this.getAcornState = function() {
+		return this.acornState;
+	}
+	this.setAcornState = function(s) {
+		this.acornState = s;
+	}
+	this.getChasePlayer = function() {
+		return this.chasePlayer;
+	}
+	this.setChasePlayer = function(chase) {
+		this.chasePlayer = chase;
+	}
+	this.getHasAcorn = function() {
+		return this.hasAcorn;
+	}
+	this.setHasAcorn = function(a) {
+		this.hasAcorn = a;
+	}
+	this.getX = function() {
+		return this.pos.x;
+	}
+	this.getY = function() {
+		return this.pos.y;
+	}
+	this.getTargetID = function() {
+		return this.targetID;
+	}
+	this.setTargetID = function(id) {
+		this.targetID = id;
+	}
 	this.getAngle = function() {
 		return this.ang * 360 / (Math.PI * 2);
+	}
+	this.setAngle = function(ang_) {
+		this.ang = ang_ * (Math.PI * 2) / 360;
+	}
+	this.getTargetAngle = function() {
+		return this.targetAngle * 360 / (Math.PI * 2);
 	}
 	this.setTargetAngle = function(angle_) {
 		this.targetAngle = angle_ * (Math.PI * 2) / 360;
@@ -44,6 +83,9 @@ function GameObject(radius_, angle_, fileName) {
 	}
 	this.addHP = function(hp_) {
 		this.hp += hp_;
+		if (this.hp <= 0) {
+			this.kill();
+		}
 	}
 	this.setVisible = function(vis) {
 		this.s.visible = vis;
@@ -63,6 +105,9 @@ function GameObject(radius_, angle_, fileName) {
 	this.addMag = function(m) {
 		this.mag += m;
 	}
+	this.setMag = function(m) {
+		this.mag = m;
+	}
 	this.getMag = function() {
 		return this.mag;
 	}
@@ -80,38 +125,27 @@ function GameObject(radius_, angle_, fileName) {
 		this.vel = Math.min(this.vel, this.maxSpeed);
 	}
 	this.steer = function() {
-		// while (this.ang < -Math.PI) this.ang += Math.PI;
-		// while (this.ang > Math.PI) this.ang -= Math.PI;
 		this.pos.rotate(this.ang);
 		this.ang += this.vel;
-		//this.acc -= (this.friction * this.acc);
 		this.vel -= (this.friction * this.vel); //friction
 		this.pos.rotate(-this.ang);
 		this.pos.setMag(this.mag);
 		this.orient();
 	}
+	this.teleport = function() {
+		this.pos = createVector(this.mag, 0.0);
+		this.pos.rotate(-this.ang);
+		this.pos.setMag(this.mag);
+		this.orient();
+	}
 	this.seek = function() {
-		//			float targetAngle = getAngle(position, Input.getXY().sub(scrollOffset.to2D()));
-		//			float totalRotation = targetAngle - angle;
-		//			while (totalRotation < -180) totalRotation += 360;
-		//			while (totalRotation > 180)  totalRotation -= 360;
-		//			if (totalRotation < 0.0) {
-		//				angle -= turnSpeed;
-		//			} else if (totalRotation > 0.0) {
-		//				angle += turnSpeed;
-		//			}
-		//			rot = angle;
 		var totalRotation = this.targetAngle - this.ang;
-		// console.log("ang: " + this.ang);
-		// console.log("targetAngle: " + this.targetAngle);
-		// console.log("totalRotation: " + totalRotation);
 		while (totalRotation < -Math.PI) {
 			totalRotation += Math.PI * 2;
 		}
 		while (totalRotation > Math.PI) {
 			totalRotation -= Math.PI * 2;
 		}
-		// console.log("totalRotation normalized: " + totalRotation);
 		if (totalRotation < 0.0) {
 			this.move(-1);
 		} else if (totalRotation > 0.0) {
@@ -119,6 +153,13 @@ function GameObject(radius_, angle_, fileName) {
 		} else {
 			this.move(1);
 		}
+	}
+	this.kill = function() {
+		if (this.alive) {
+			killID(this.id);
+		}
+		this.s.life = 0;
+		this.s.remove();
 	}
 
 	this.init();

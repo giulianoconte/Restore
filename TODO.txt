@@ -1,17 +1,13 @@
 TODO:
 
   CODE:
-sapling to tree logic
 throw acorns into space and hit stuff
 hold acorns over head
 pick acorn up
 tree drops acorn at random
 spawn alien at random angle
 alien picks target angle from trees list or player and seeks it
-alien shoots bullets on timer and near target
-bullet+tree and bullet+player collision
 
-preload()
 "press s to start"
 player descends from top, controls locked
 win and loss text over planet

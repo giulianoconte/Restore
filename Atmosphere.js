@@ -1,4 +1,6 @@
 
+var ATMOSPHERE_GROWTH = 0.0005;
+
 function createAtmosphere(spread_) {
   var a = createObject(0.0, 0.0, "");
   a.init = function() {
@@ -22,9 +24,9 @@ function createAtmosphere(spread_) {
   }
   a.setIntensity = function(intensity_) {
     if (a.intensity < intensity_ + 0.01) {
-      a.intensity += 0.0005;
+      a.intensity += ATMOSPHERE_GROWTH;
     } else if (a.intensity > intensity_ - 0.01) {
-      a.intensity -= 0.0005;
+      a.intensity -= ATMOSPHERE_GROWTH;
     }
     a.intensity = Math.min(a.intensity, 1.0);
     a.intensity = Math.max(a.intensity, 0.0);

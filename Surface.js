@@ -7,8 +7,8 @@ function createSurface() {
   var surface = [];
   surface.overlaps = [];
   surface.probs = []; //probability array corresponding to each block
-  surface.range = 60
-  surface.sapRange = 20
+  surface.range = 30
+  surface.sapRange = 10
   surface.eventProb = 0.001 //probability that grass will grow or die
   surface.randomIncrease = 0.000001;
   surface.distMult = 300;
