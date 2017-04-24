@@ -13,7 +13,7 @@ var BUILD_TYPE = 1; //0 for local, 1 for web
 var GAME_SIZE = 580; //this is so game can be fully seen on 720p browser windows
 var HALF_GAME_SIZE = GAME_SIZE / 2;
 
-var WINNING_ATMOSPHERE_STRENGTH = 1.0;
+var WINNING_ATMOSPHERE_STRENGTH = 0.95;
 
 var PLANET_RADIUS = 120;
 var PLAYER_RADIUS = PLANET_RADIUS + 25;
@@ -26,19 +26,26 @@ var GRASS_RADIUS_OFFSET = 4;
 
 var PLANET_COLLISION_RADIUS = 118;
 var PLAYER_COLLISION_RADIUS = 20;
-var ACORN_COLLISION_RADIUS = 40;
+var ACORN_COLLISION_RADIUS = 44;
 var TREE_COLLISION_RADIAL = 5;
 
-var SPAWN_RATE = 0.002;
+var SAPLING_HP = 2;
+var TREE_HP = 4;
+
+var SPAWN_RATE = 0.001;
+var SWARM_RATE = 0.002;
+var MAX_ENEMIES = 30;
+var SPAWN_INCREASE = 0.00001;
 var ENEMY_SPEED = 0.04;
 var ENEMY_FORCE = 0.001;
 var ENEMY_FRICTION = 0.01;
-var ENEMY_SHOOT_TIME = 1000;
+var ENEMY_SHOOT_TIME = 1500;
 var ENEMY_SHOOT_TIME_OFFSET = 500;
 var BULLET_SPEED = 2;
 var BULLET_LIFE_TIME = 200;
-var ACORN_RELOAD_TIME = 1000;
-var ACORN_SPEED = 6;
+var ACORN_SHOOT_RELOAD = 300;
+var ACORN_PLANT_RELOAD = 700;
+var ACORN_SPEED = 9;
 
 var TARGET_PLAYER = 0.2;
 var TARGET_SAPLING = 0.4;
@@ -206,8 +213,10 @@ function updatePlayer() {
 }
 
 function reloadAcorn() {
-	acorn.setAcornState(1);
-	acorn.setVisible(true);
+	if (!hasLost) {
+		acorn.setAcornState(1);
+		acorn.setVisible(true);
+	}
 }
 
 function updateAcorn() {
@@ -226,24 +235,24 @@ function updateAcorn() {
 	}
 	if (KEY_W && acorn.getAcornState() !== 2 && acorn.getAcornState() !== 3) {
 		acorn.setAcornState(2);
-		setTimeout(reloadAcorn, ACORN_RELOAD_TIME);
+		setTimeout(reloadAcorn, ACORN_SHOOT_RELOAD);
 	}
 	if (KEY_S && acorn.getAcornState() !== 2 && acorn.getAcornState() !== 3) {
 		acorn.setAcornState(3);
 		var type = Math.floor(Math.random()*2);
 			if (type === 0) {
 				saplings.push(new GameObject(TREE_RADIUS, player.getAngle(), "sapling1.png"));
-				saplings[saplings.length-1].setHP(2);
+				saplings[saplings.length-1].setHP(3);
 				surface.addSapling(player.getAngle());
 			}
 			if (type === 1) {
 				var off = Math.ceil(Math.random()*2);
 				trees.push(new GameObject(TREE_RADIUS, player.getAngle(), "tree" + off + ".png"));
 				surface.removeSapling(player.getAngle());
-				trees[trees.length-1].setHP(5);
+				trees[trees.length-1].setHP(6);
 				surface.addTree(player.getAngle());
 			}
-			setTimeout(reloadAcorn, ACORN_RELOAD_TIME);
+			setTimeout(reloadAcorn, ACORN_PLANT_RELOAD);
 	}
 	//collision
 	for (var i = 0; i < enemies.length; i++) {
@@ -251,20 +260,30 @@ function updateAcorn() {
 				enemies[i].getX(), enemies[i].getY(), ACORN_COLLISION_RADIUS)) {
 			enemies[i].kill()
 			enemies.splice(i, 1);
+			SWARM_RATE -=  0.0002;
+			SWARM_RATE = Math.max(SWARM_RATE, 0.0);
 		}
 	}
 }
 
+var pseudo = 0.0;
 function spawnEnemies() {
-	if (Math.random() < trees.length*SPAWN_RATE && !hasWon && !hasLost && enemies.length < 25) {
+	//var maxEnemies = map(atmosphereStrength, 0, WINNING_ATMOSPHERE_STRENGTH, 1, MAX_ENEMIES);
+	var numEnemies = enemies.length;
+	// console.log(maxEnemies);
+	var plants = trees.length + saplings.length;
+	if (Math.random() < pseudo + numEnemies*SWARM_RATE + plants*SPAWN_RATE && !hasWon && !hasLost && enemies.length < MAX_ENEMIES) {
 		var i = enemies.length;
-		enemies.push(new GameObject(ENEMY_RADIUS + Math.random()*ENEMY_RADIUS_OFFSET, 45*i, "enemy5.png"));
+		enemies.push(new GameObject(ENEMY_RADIUS + Math.random()*ENEMY_RADIUS_OFFSET, Math.random()*360, "enemy5.png"));
 		enemies[i].setMaxSpeed(ENEMY_SPEED);
 		enemies[i].setMaxForce(ENEMY_FORCE);
 		enemies[i].setFriction(ENEMY_FRICTION);
 		enemies[i].setTargetID(getSomeTargetID());
 		enemies[i].setTargetAngle(getIDAngle(enemies[i].getTargetID()));
 		repeatShoot(enemies[i].getID());
+		pseudo = 0.0;
+	} else {
+		pseudo += SPAWN_INCREASE;
 	}
 }
 
@@ -382,14 +401,14 @@ function update() {
 
 	if (false) {
 		saplings.push(new GameObject(TREE_RADIUS, player.getAngle(), "sapling1.png"));
-		saplings[saplings.length-1].setHP(2);
+		saplings[saplings.length-1].setHP(SAPLING_HP);
 		surface.addSapling(player.getAngle());
 	}
 	if (false) {
 		var off = Math.ceil(Math.random()*2);
 		trees.push(new GameObject(TREE_RADIUS, player.getAngle(), "tree" + off + ".png"));
 		surface.removeSapling(player.getAngle());
-		trees[trees.length-1].setHP(5);
+		trees[trees.length-1].setHP(TREE_HP);
 		surface.addTree(player.getAngle());
 	}
 	//update surface
@@ -403,19 +422,22 @@ function update() {
 		}
 	}
 	//atmosphere grows and shrinks with grass coverage
-	atmosphereStrength = (surface.coverage()*0.3) + (trees.length*0.05);
+	atmosphereStrength = (surface.coverage()*0.4) + (trees.length*0.06);
 	atmosphere.setIntensity(atmosphereStrength);
 
-	if (atmosphereStrength >= WINNING_ATMOSPHERE_STRENGTH && !hasWon) {
+	if (atmosphereStrength >= WINNING_ATMOSPHERE_STRENGTH && !hasWon && !hasLost) {
 		youWin = new GameObject(0, 90, "YOUWIN.png");
 		console.log("YOU WIN");
 		hasWon = true;
+		acorn.setAcornState(-1)
+		acorn.setVisible(false);
 		restore.setVisible(false);
 	}
-	if (player.getHP() <= 0 && !hasLost) {
+	if (player.getHP() <= 0 && !hasLost && !hasWon) {
 		youLose = new GameObject(0, 90, "YOULOSE.png");
 		console.log("YOU LOSE");
 		hasLost = true;
+		acorn.setAcornState(-1)
 		acorn.setVisible(false);
 		restore.setVisible(false);
 	}
