@@ -23,8 +23,8 @@ Theme: "A Small World"
 
  + HTML
  + JavaScript
- + p5.js
- + p5.play
+ + [p5.js](https://p5js.org/)
+ + [p5.play](http://p5play.molleindustria.org/)
  
 ## Tutorial on how to create and host your own JavaScript game
 
